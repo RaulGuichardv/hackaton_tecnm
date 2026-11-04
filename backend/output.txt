@@ -1,0 +1,333 @@
+====================================================================
+
+           CREDETEC API - FORMATO DE SALIDA (RESPUESTAS)
+
+====================================================================
+
+
+
+1. REGISTRAR TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: POST
+
+Ruta: /trabajadores/registrar
+
+Código HTTP: 201 Created
+
+
+
+Respuesta JSON:
+
+{
+
+  "mensaje": "Trabajador registrado exitosamente",
+
+  "id_trabajador": 1
+
+}
+
+
+
+
+
+2. CONSULTAR TODOS LOS TRABAJADORES
+
+--------------------------------------------------------------------
+
+Método: GET
+
+Ruta: /trabajadores/consultar-todo
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+[
+
+  {
+
+    "id_trabajador": 1,
+
+    "nombre_completo": "Roberto Carlos Hernandez",
+
+    "edad": 35,
+
+    "sexo": "hombre",
+
+    "curp": "HEHR880101HDFRXX01",
+
+    "numero_de_tarjeta": 4589231092341234,
+
+    "area_adscripcion": "Sistemas",
+
+    "cargo": "Desarrollador Senior",
+
+    "fotografia": "/uploads/fotos/roberto.jpg",
+
+    "id_datos_emergencia": 1,
+
+    "id_vigencia": 1,
+
+    "id_estado": 1,
+
+    "id_qr": 1
+
+  }
+
+]
+
+
+
+
+
+3. CONSULTAR TRABAJADOR POR ID
+
+--------------------------------------------------------------------
+
+Método: GET
+
+Ruta: /trabajadores/consultar/{id_trabajador}
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "id_trabajador": 1,
+
+  "nombre_completo": "Roberto Carlos Hernandez",
+
+  "edad": 35,
+
+  "sexo": "hombre",
+
+  "curp": "HEHR880101HDFRXX01",
+
+  "numero_de_tarjeta": 4589231092341234,
+
+  "area_adscripcion": "Sistemas",
+
+  "cargo": "Desarrollador Senior",
+
+  "fotografia": "/uploads/fotos/roberto.jpg",
+
+  "id_datos_emergencia": 1,
+
+  "id_vigencia": 1,
+
+  "id_estado": 1,
+
+  "id_qr": 1
+
+}
+
+
+
+
+
+4. OBTENER ESTADO DEL TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: GET
+
+Ruta: /trabajadores/{id_trabajador}/estado
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "id_estado": 1,
+
+  "estado": true
+
+}
+
+
+
+
+
+5. OBTENER DATOS DE EMERGENCIA DEL TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: GET
+
+Ruta: /trabajadores/{id_trabajador}/datos-emergencia
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "id_datos_emergencia": 1,
+
+  "nombre": "Maria Gomez (Esposa)",
+
+  "telefono": "9611234567"
+
+}
+
+
+
+
+
+6. OBTENER VIGENCIA DEL TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: GET
+
+Ruta: /trabajadores/{id_trabajador}/vigencias
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "id_vigencia": 1,
+
+  "fecha_inicio": "2026-01-01T00:00:00",
+
+  "fecha_vencimiento": "2026-12-31T23:59:59"
+
+}
+
+
+
+
+
+7. OBTENER QR DEL TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: GET
+
+Ruta: /trabajadores/{id_trabajador}/qr
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "id_qr": 1,
+
+  "qr": "/uploads/qrs/trabajador_1.png"
+
+}
+
+
+
+
+
+8. ACTUALIZAR TRABAJADOR (PARCIAL)
+
+--------------------------------------------------------------------
+
+Método: PATCH
+
+Ruta: /trabajadores/actualizar/{id_trabajador}
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "mensaje": "Trabajador 1 actualizado correctamente"
+
+}
+
+
+
+
+
+9. ACTUALIZAR VIGENCIA DEL TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: PUT
+
+Ruta: /trabajadores/{id_trabajador}/vigencia
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "fecha_inicio": "2026-01-01T00:00:00",
+
+  "fecha_vencimiento": "2026-12-31T23:59:59"
+
+}
+
+
+
+
+
+10. ELIMINAR TRABAJADOR
+
+--------------------------------------------------------------------
+
+Método: DELETE
+
+Ruta: /trabajadores/eliminar/{id_trabajador}
+
+Código HTTP: 200 OK
+
+
+
+Respuesta JSON:
+
+{
+
+  "mensaje": "Trabajador 1 y sus registros relacionados fueron eliminados exitosamente"
+
+}
+
+
+
+
+
+====================================================================
+
+                 FORMATO ESTÁNDAR DE ERRORES
+
+====================================================================
+
+Códigos HTTP posibles: 400 Bad Request, 404 Not Found, 500 Internal Server Error
+
+
+
+Respuesta JSON:
+
+{
+
+  "detail": "Descripción del error ocurrido."
+
+}
