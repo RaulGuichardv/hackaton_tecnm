@@ -58,19 +58,24 @@ CREATE TABLE IF NOT EXISTS trabajadores (
 );
 
 INSERT INTO administrador (nombre, correo, password) VALUES 
-('Super Admin', 'admin@credetec.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/kJ02.6.2S');
+('raul', 'admin@credetec.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/kJ02.6.2S');
 
 INSERT INTO datos_de_emergencia (nombre, telefono) VALUES 
-('Maria Gomez (Esposa)', '9611234567');
+('Maria Gomez (Esposa)', '9611234567'),
+('Angel', '9321084680');
 
 INSERT INTO vigencias (credencial_activa_dentro_del_periodo, credencial_desactivada_por_el_administrador, fecha_inicio, fecha_vencimiento) VALUES 
+(TRUE, FALSE, '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
 (TRUE, FALSE, '2026-01-01 00:00:00', '2026-12-31 23:59:59');
 
 INSERT INTO estado (estado) VALUES 
+(TRUE),
 (TRUE);
 
 INSERT INTO qrs (qr) VALUES 
-('/uploads/qrs/trabajador_1.png');
+('/uploads/qrs/trabajador_1.png'),
+('/uploads/qrs/trabajador_2.png');
 
 INSERT INTO trabajadores (nombre_completo, edad, sexo, curp, numero_de_tarjeta, area_adscripcion, cargo, fotografia, id_datos_emergencia, id_vigencia, id_estado, id_qr) VALUES 
-('Roberto Carlos Hernandez', 35, 'hombre', 'HEHR880101HDFRXX01', 4589231092341234, 'Sistemas', 'Desarrollador Senior', '/uploads/fotos/roberto.jpg', 1, 1, 1, 1);
+('Roberto Carlos Hernandez', 35, 'hombre', 'HEHR880101HDFRXX01', 4589231092341234, 'Sistemas', 'Desarrollador Senior', '/uploads/fotos/roberto.jpg', 1, 1, 1, 1),
+('monse', 20, 'mujer', 'MONS880101SIXRXX01', 3211232043348902, 'desarrollo', 'Desarrollador junior', '/uploads/fotos/monse.jpg', 2, 2, 2, 2);
