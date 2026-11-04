@@ -1,7 +1,6 @@
 CREATE DATABASE IF NOT EXISTS credetec;
 USE credetec;
 
-
 CREATE TABLE IF NOT EXISTS administrador (
     id_administrador INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     nombre VARCHAR(100) NOT NULL,
@@ -57,3 +56,21 @@ CREATE TABLE IF NOT EXISTS trabajadores (
     CONSTRAINT fk_trabajador_qr 
         FOREIGN KEY (id_qr) REFERENCES qrs(id_qr)
 );
+
+INSERT INTO administrador (nombre, correo, password) VALUES 
+('Super Admin', 'admin@credetec.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/kJ02.6.2S');
+
+INSERT INTO datos_de_emergencia (nombre, telefono) VALUES 
+('Maria Gomez (Esposa)', '9611234567');
+
+INSERT INTO vigencias (credencial_activa_dentro_del_periodo, credencial_desactivada_por_el_administrador, fecha_inicio, fecha_vencimiento) VALUES 
+(TRUE, FALSE, '2026-01-01 00:00:00', '2026-12-31 23:59:59');
+
+INSERT INTO estado (estado) VALUES 
+(TRUE);
+
+INSERT INTO qrs (qr) VALUES 
+('/uploads/qrs/trabajador_1.png');
+
+INSERT INTO trabajadores (nombre_completo, edad, sexo, curp, numero_de_tarjeta, area_adscripcion, cargo, fotografia, id_datos_emergencia, id_vigencia, id_estado, id_qr) VALUES 
+('Roberto Carlos Hernandez', 35, 'hombre', 'HEHR880101HDFRXX01', 4589231092341234, 'Sistemas', 'Desarrollador Senior', '/uploads/fotos/roberto.jpg', 1, 1, 1, 1);
