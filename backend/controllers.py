@@ -8,7 +8,7 @@ def registrar_trabajador_completo(datos: dict) -> dict:
         with conexion.cursor() as cursor:
             sql_emergencia = """
                 INSERT INTO datos_de_emergencia (nombre, telefono)
-                VALUES (%s, %s)
+                VALUES (%s, %s) 
             """
             cursor.execute(sql_emergencia, (
                 datos["datos_emergencia"]["nombre"],
@@ -216,7 +216,13 @@ def obtener_qr_trabajador(id_trabajador: int) -> dict:
         conexion.close()
 
 
-def actualizar_vigencia_trabajador(id_trabajador: int, fecha_inicio: str, fecha_vencimiento: str) -> dict:
+def actualizar_vigencia_trabajador(
+    id_trabajador: int, 
+    fecha_inicio: str, 
+    fecha_vencimiento: str, 
+    activa_periodo: bool = True, 
+    desactivada_admin: bool = False
+) -> dict:
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
@@ -231,18 +237,52 @@ def actualizar_vigencia_trabajador(id_trabajador: int, fecha_inicio: str, fecha_
 
             sql_update = """
                 UPDATE vigencias 
-                SET fecha_inicio = %s, fecha_vencimiento = %s 
+                SET fecha_inicio = %s, 
+                    fecha_vencimiento = %s, 
+                    credencial_activa_dentro_del_periodo = %s, 
+                    credencial_desactivada_por_el_administrador = %s
                 WHERE id_vigencia = %s
             """
-            cursor.execute(sql_update, (fecha_inicio, fecha_vencimiento, id_vigencia))
+            cursor.execute(
+                sql_update, 
+                (fecha_inicio, fecha_vencimiento, activa_periodo, desactivada_admin, id_vigencia)
+            )
 
         conexion.commit()
+        
         return {
             "fecha_inicio": fecha_inicio,
-            "fecha_vencimiento": fecha_vencimiento
+            "fecha_vencimiento": fecha_vencimiento,
+            "credencial_activa_dentro_del_periodo": activa_periodo,
+            "credencial_desactivada_por_el_administrador": desactivada_admin
         }
     except Exception as e:
         conexion.rollback()
         raise e
+    finally:
+        conexion.close()
+        
+def obtener_credenciales_de_un_trabajador(id_trabajador: int) -> dict:
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            sql = """
+                SELECT 
+                    t.fotografia,
+                    t.nombre_completo,
+                    t.id_trabajador,
+                    t.area_adscripcion,
+                    t.cargo,
+                    t.numero_de_tarjeta,
+                    v.fecha_vencimiento,
+                    e.estado
+                FROM trabajadores t
+                INNER JOIN vigencias v ON t.id_vigencia = v.id_vigencia
+                INNER JOIN estado e ON t.id_estado = e.id_estado
+                WHERE t.id_trabajador = %s
+            """
+            cursor.execute(sql, (id_trabajador,))
+            
+            return cursor.fetchone()
     finally:
         conexion.close()

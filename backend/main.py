@@ -37,6 +37,15 @@ class VigenciaSchema(BaseModel):
 class EstadoSchema(BaseModel):
     estado: bool = True
 
+class CredencialTrabajadorResponse(BaseModel):
+    fotografia: str
+    nombre_completo: str
+    id_trabajador: int
+    area_adscripcion: str
+    cargo: str
+    numero_de_tarjeta: int
+    fecha_vencimiento: datetime
+    estado: bool
 class QRSchema(BaseModel):
     qr: str
 
@@ -127,6 +136,13 @@ def obtener_qr(id_trabajador: int):
     if not qr:
         raise HTTPException(status_code=404, detail="QR no encontrado")
     return qr
+
+@app.get("/trabajadores/{id_trabajador}/credenciales", response_model=CredencialTrabajadorResponse, tags=["Relaciones"])
+def obtener_credenciales_de_un_empleado(id_trabajador: int):
+    credenciales = controllers.obtener_credenciales_de_un_trabajador(id_trabajador)
+    if not credenciales:
+        raise HTTPException(status_code=404, detail="credenciales no encontradas")
+    return credenciales
 
 @app.patch("/trabajadores/actualizar/{id_trabajador}", tags=["Trabajadores"])
 def actualizar_trabajador(id_trabajador: int, datos: ActualizarTrabajadorSchema):

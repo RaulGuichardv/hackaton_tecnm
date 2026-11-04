@@ -39,3 +39,7 @@
 10. /trabajadores/eliminar/:id_trabajador
     - Protocolo HTTP: DELETE
     - Descripción: Elimina un trabajador específico del sistema y de la base de datos.
+
+11. /trabajadores/credenciales/{id_trabajador}
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene las credenciales de un trabajador
