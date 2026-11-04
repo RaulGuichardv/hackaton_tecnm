@@ -1,0 +1,41 @@
+ LISTA DE ENDPOINTS DE LA API 
+
+1. /trabajadores/registrar
+   - Protocolo HTTP: POST
+   - Descripción: Crea y registra un nuevo trabajador en el sistema junto con sus relaciones.
+
+2. /trabajadores/consultar-todo
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene el listado completo con los datos de todos los trabajadores registrados.
+
+3. /trabajadores/consultar/:id_trabajador
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene los datos generales de un solo trabajador específico.
+
+4. /trabajadores/:id_trabajador/estado
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene el estado actual (activo o inactivo) de un trabajador en específico.
+
+5. /trabajadores/:id_trabajador/datos-emergencia
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene la información de contacto de emergencia asociada a un trabajador específico.
+
+6. /trabajadores/:id_trabajador/vigencias
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene las fechas de inicio y vencimiento de la credencial de un trabajador específico.
+
+7. /trabajadores/:id_trabajador/qr
+   - Protocolo HTTP: GET
+   - Descripción: Obtiene el código QR o la ruta de la imagen QR correspondiente a un trabajador específico.
+
+8. /trabajadores/actualizar/:id_trabajador
+   - Protocolo HTTP: PATCH
+   - Descripción: Actualiza parcialmente uno o varios atributos generales de un trabajador específico.
+
+9. /trabajadores/:id_trabajador/vigencia
+   - Protocolo HTTP: PUT (o PATCH)
+   - Descripción: Agrega, renueva o modifica la fecha de inicio y vencimiento de la vigencia para un trabajador específico.
+
+10. /trabajadores/eliminar/:id_trabajador
+    - Protocolo HTTP: DELETE
+    - Descripción: Elimina un trabajador específico del sistema y de la base de datos.
