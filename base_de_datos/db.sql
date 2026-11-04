@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS datos_de_emergencia (
 
 CREATE TABLE IF NOT EXISTS vigencias (
     id_vigencia INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    credencial_activa_dentro_del_periodo BOOLEAN DEFAULT TRUE NOT NULL,
+    credencial_desactivada_por_el_administrador BOOLEAN DEFAULT FALSE NOT NULL,
     fecha_inicio DATETIME NOT NULL,
     fecha_vencimiento DATETIME NOT NULL
 );
