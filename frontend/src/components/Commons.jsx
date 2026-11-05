@@ -10,7 +10,7 @@ export function Estado({ estado }) {
     inactiva: { label: "Inactiva", color: "failure" },
     vencida: { label: "Vencida", color: "warning" },
     no_vigente: { label: "No vigente", color: "gray" },
-    sin_datos: { label: "Datos incompletos", color: "gray" },
+    sin_datos: { label: "Sin estado", color: "gray" },
   };
   const data = map[estado] || { label: estado || "Sin estado", color: "gray" };
   return <Badge color={data.color} className="w-fit whitespace-nowrap">{data.label}</Badge>;
@@ -58,7 +58,6 @@ export function Layout() {
         </nav>
         <div className="mt-8 rounded-xl bg-slate-800 p-3 text-xs leading-relaxed text-slate-300">
           <p className="font-semibold text-white">{admin?.nombre || "Administrador"}</p>
-          <p className="mt-1">Sesión protegida con token firmado. La API valida cada operación.</p>
         </div>
         <button onClick={salir} className="mt-4 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800"><LogOut size={17}/> Cerrar sesión</button>
       </aside>

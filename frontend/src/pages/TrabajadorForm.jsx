@@ -52,7 +52,7 @@ export default function TrabajadorForm() {
     catch(ex){setError(ex.message)} finally {setLoading(false)}
   }
   return <>
-    <PageHead title={id ? "Editar trabajador" : "Registrar trabajador"} description="Datos administrativos privados. La vista y la API están protegidas con token de administrador."><Link to="/admin/trabajadores" className="text-sm text-sky-700"><ArrowLeft size={16} className="mr-1 inline"/>Volver</Link></PageHead>
+    <PageHead title={id ? "Editar trabajador" : "Registrar trabajador"} description="Datos administrativos privados del trabajador."><Link to="/admin/trabajadores" className="text-sm text-sky-700"><ArrowLeft size={16} className="mr-1 inline"/>Volver</Link></PageHead>
     <ErrorMessage error={error}/>
     <form onSubmit={submit} className="grid gap-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7">
       <div className="grid gap-4 sm:grid-cols-2">{fields.map(([name,label,type,required])=><label className="field-label" key={name}>{label}{type==="select" ? <select className="field" name={name} value={values[name]} onChange={change} required={required}><option value="">Selecciona una opción</option><option value="mujer">Mujer</option><option value="hombre">Hombre</option><option value="otros">Otro</option></select> : <input className="field" name={name} type={type} value={values[name]} onChange={change} required={required} min={type==="number" ? "1" : undefined} max={type==="number" ? "110" : undefined} maxLength={name==="curp" ? 18 : name==="numero_tarjeta" ? 30 : undefined}/>}</label>)}</div>
