@@ -290,6 +290,7 @@ def diagnostico() -> dict:
         "smtp_port": SMTP_PORT if SMTP_HOST else None,
         "smtp_usuario": SMTP_USER or None,
         "remitente": EMAIL_API_FROM or None,
+        "url_publica": PUBLIC_BASE_URL or None,
     }
 
 
