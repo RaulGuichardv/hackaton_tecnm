@@ -2,8 +2,7 @@ import { Badge } from "flowbite-react";
 import { NavLink, Outlet, Link, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, UsersRound, IdCard, ChartColumn, Menu, X, LogOut, ShieldCheck, QrCode } from "lucide-react";
-import logoIzq from "../assets/logo_izq.png";
-import logoDer from "../assets/logo_der.png";
+import logoPrincipal from "../assets/logo_principal.png";
 
 export function Estado({ estado }) {
   const map = {
@@ -48,7 +47,7 @@ export function Layout() {
       </header>
       {open && <button className="no-print fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={close} aria-label="Cerrar navegación"/>}
       <aside className={`no-print fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto bg-slate-900 px-4 py-7 text-white transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
-        <Link to="/admin" onClick={close} className="flex items-center gap-3 px-3 pb-8 text-xl font-bold"><div className="flex gap-1"><img src={logoIzq} alt="Logo" className="h-6 w-6 object-contain"/><img src={logoDer} alt="Logo" className="h-6 w-6 object-contain"/></div><span className="ml-1">Credetec</span></Link>
+        <Link to="/admin" onClick={close} className="flex items-center gap-3 px-3 pb-8 text-xl font-bold"><img src={logoPrincipal} alt="Logo" className="h-8 w-8 object-contain"/><span className="ml-1">Credetec</span></Link>
         <div className="mb-4 px-3 text-xs uppercase tracking-widest text-slate-400">Panel de administración</div>
         <nav className="grid gap-1">
           {menu.map(([to, label, Icon]) => (

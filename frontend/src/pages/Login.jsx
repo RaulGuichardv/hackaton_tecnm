@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { LockKeyhole } from "lucide-react";
-import logoIzq from "../assets/logo_izq.png";
-import logoDer from "../assets/logo_der.png";
+import logoPrincipal from "../assets/logo_principal.png";
 import { apiFetch } from "../services/api";
 
 export default function Login() {
@@ -62,7 +61,7 @@ export default function Login() {
       <div className="mx-auto w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl sm:p-10">
 
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex gap-1"><img src={logoIzq} alt="Logo" className="h-10 w-10 object-contain"/><img src={logoDer} alt="Logo" className="h-10 w-10 object-contain"/></div>
+          <img src={logoPrincipal} alt="Logo Credetec" className="h-14 w-14 object-contain"/>
 
           <div>
             <h1 className="text-2xl font-bold">
