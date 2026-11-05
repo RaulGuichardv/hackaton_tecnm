@@ -63,13 +63,19 @@ async function cargarRelaciones(id, conEmergencia = false) {
   return extra;
 }
 
-export async function listarTrabajadores() {
-  const data = await apiFetch(ENDPOINTS.listar, auth());
-  if (!Array.isArray(data)) throw new Error("FastAPI no devolvió una lista de trabajadores");
+export async function listarTrabajadores(page = 1, pageSize = 50) {
+  const data = await apiFetch(`${ENDPOINTS.listar}?page=${page}&page_size=${pageSize}`, auth());
+  if (!data || !Array.isArray(data.resultados)) throw new Error("FastAPI no devolvió una lista paginada de trabajadores");
   // El backend ya entrega estado, vigencia y QR en una sola consulta con JOIN,
   // por lo que no se necesitan peticiones extra por trabajador.
-  const result = [];
-  for (const row of data) {
+  const result = {
+    resultados: [],
+    total: data.total,
+    pagina: data.pagina,
+    pagina_tamano: data.pagina_tamano,
+    total_paginas: data.total_paginas,
+  };
+  for (const row of data.resultados) {
     const extra = {
       estado: { estado: row.estado_activo ?? null },
       vigencia: {
@@ -78,7 +84,7 @@ export async function listarTrabajadores() {
       },
       qr: { qr: row.qr },
     };
-    result.push(normalizar(row, extra));
+    result.resultados.push(normalizar(row, extra));
   }
   return result;
 }

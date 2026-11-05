@@ -220,6 +220,14 @@ class TrabajadorResponseSchema(BaseModel):
     fecha_vencimiento: Optional[datetime] = None
     qr: Optional[str] = None
 
+
+class TrabajadoresPaginadosResponse(BaseModel):
+    resultados: List[TrabajadorResponseSchema]
+    total: int
+    pagina: int
+    pagina_tamano: int
+    total_paginas: int
+
 @app.post(
     "/trabajadores/registrar",
     status_code=status.HTTP_201_CREATED,
@@ -244,13 +252,13 @@ def registrar_trabajador(trabajador: RegistrarTrabajadorSchema, background_tasks
 
 @app.get(
     "/trabajadores/consultar-todo",
-    response_model=List[TrabajadorResponseSchema],
+    response_model=TrabajadoresPaginadosResponse,
     tags=["Trabajadores"],
     dependencies=[Depends(requiere_admin)],
 )
-def consultar_todos():
+def consultar_todos(page: int = 1, page_size: int = 50):
     try:
-        return controllers.obtener_todos_los_trabajadores()
+        return controllers.obtener_todos_los_trabajadores(page=page, page_size=page_size)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

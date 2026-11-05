@@ -45,7 +45,7 @@ npm run dev
 
 - Aplicación: `http://localhost:5173`
 
-## Acceso de demostración
+## Acceso de administrador
 
 - Correo: `admin@credetec.com`
 - Contraseña: `Admin1234!`

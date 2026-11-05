@@ -144,10 +144,18 @@ def registrar_trabajador_completo(datos: dict) -> dict:
         conexion.close()
 
 
-def obtener_todos_los_trabajadores() -> list:
+def obtener_todos_los_trabajadores(page: int = 1, page_size: int = 50) -> dict:
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
+            # Contar total de registros para paginación
+            cursor.execute("SELECT COUNT(*) AS total FROM trabajadores")
+            total = cursor.fetchone()["total"]
+
+            # Calcular offset y límite
+            offset = (page - 1) * page_size
+            limit = page_size
+
             sql = """
                 SELECT 
                     t.*,
@@ -159,9 +167,21 @@ def obtener_todos_los_trabajadores() -> list:
                 INNER JOIN estado e ON t.id_estado = e.id_estado
                 INNER JOIN vigencias v ON t.id_vigencia = v.id_vigencia
                 INNER JOIN qrs q ON t.id_qr = q.id_qr
+                ORDER BY t.id_trabajador
+                LIMIT %s OFFSET %s
             """
-            cursor.execute(sql)
-            return cursor.fetchall()
+            cursor.execute(sql, (limit, offset))
+            resultados = cursor.fetchall()
+
+            total_paginas = (total + page_size - 1) // page_size
+
+            return {
+                "resultados": resultados,
+                "total": total,
+                "pagina": page,
+                "pagina_tamano": page_size,
+                "total_paginas": total_paginas,
+            }
     finally:
         conexion.close()
 

@@ -7,11 +7,11 @@ import { calcularEstado } from "../utils/estado";
 import { listarTrabajadores } from "../services/credenciales";
 
 export default function Trabajadores() {
-  const [workers, setWorkers] = useState([]), [search, setSearch] = useState(""), [error,setError] = useState(""), [loading,setLoading] = useState(true);
-  useEffect(() => { let active=true; listarTrabajadores().then(v => { if(active) setWorkers(v); }).catch(e=> { if(active) setError(e.message); }).finally(()=> {if(active) setLoading(false); }); return()=>{active=false}; }, []);
+  const [workers, setWorkers] = useState([]), [search, setSearch] = useState(""), [error,setError] = useState(""), [loading,setLoading] = useState(true), [total, setTotal] = useState(0);
+  useEffect(() => { let active=true; listarTrabajadores().then(v => { if(active) { setWorkers(v.resultados); setTotal(v.total); } }).catch(e=> { if(active) setError(e.message); }).finally(()=> {if(active) setLoading(false); }); return()=>{active=false}; }, []);
   const filtered=useMemo(()=>workers.filter(w=>`${w.nombre_completo} ${w.numero_trabajador} ${w.area_adscripcion}`.toLowerCase().includes(search.toLowerCase())),[workers,search]);
   return <>
-    <PageHead title="Trabajadores" description="Consulta los datos registrados y accede a su credencial. El reto exige al menos 10 registros."><Link to="/admin/trabajadores/nuevo"><Button><Plus size={17} className="mr-2"/>Registrar trabajador</Button></Link></PageHead>
+    <PageHead title="Trabajadores" description="Consulta los datos registrados y accede a su credencial digital."><Link to="/admin/trabajadores/nuevo"><Button><Plus size={17} className="mr-2"/>Registrar trabajador</Button></Link></PageHead>
     <ErrorMessage error={error}/>
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><label className="w-full max-w-md"><span className="sr-only">Buscar trabajador</span><input className="field" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre, número o área…"/></label><span className="text-xs text-slate-500">{filtered.length} resultados</span></div>
       {loading ? <p className="py-6 text-sm">Cargando...</p> : <>
