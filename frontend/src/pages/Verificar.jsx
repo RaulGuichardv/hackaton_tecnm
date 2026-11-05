@@ -13,7 +13,7 @@ export default function Verificar() {
   const estado = item ? calcularEstado(item) : null;
   return <main className="min-h-screen bg-slate-100 px-4 py-9 sm:grid sm:place-items-center">
     <section className="mx-auto w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-      <div className="bg-slate-900 px-6 py-5 text-white"><div className="flex items-center gap-3"><ShieldCheck/><div><h1 className="text-xl font-bold">Verificación de credencial</h1><p className="text-sm text-slate-300">Consulta pública · Reto 3</p></div></div></div>
+      <div className="bg-slate-900 px-6 py-5 text-white"><div className="flex items-center gap-3"><ShieldCheck/><div><h1 className="text-xl font-bold">Verificación de credencial</h1><p className="text-sm text-slate-300">Consulta pública</p></div></div></div>
       <div className="p-6 sm:p-8">
         {error&&<p role="alert" className="rounded-xl bg-red-50 p-4 text-red-800">No fue posible consultar la credencial: {error}</p>}
         {item===undefined&&!error&&<p className="text-slate-500">Consultando credencial…</p>}

@@ -1,7 +1,8 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Building2, LockKeyhole } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 import { apiFetch } from "../services/api";
 
 export default function Login() {
@@ -60,9 +61,7 @@ export default function Login() {
       <div className="mx-auto w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl sm:p-10">
 
         <div className="mb-6 flex items-center gap-3">
-          <div className="rounded-xl bg-sky-100 p-3 text-sky-800">
-            <Building2 size={26} />
-          </div>
+          <img src={logo} alt="Logo Credetec" className="h-10 w-10 rounded-xl object-cover"/>
 
           <div>
             <h1 className="text-2xl font-bold">

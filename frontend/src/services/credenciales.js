@@ -1,7 +1,7 @@
 import { apiFetch } from "./api";
 import { ENDPOINTS } from "./endpoints";
 
-// Adaptación al backend FastAPI del Reto 3.
+// Adaptación al backend FastAPI.
 // Las rutas administrativas exigen un Bearer token firmado por el backend.
 const auth = () => ({ token: sessionStorage.getItem("token") });
 const field = (value) => (value == null ? "" : String(value));

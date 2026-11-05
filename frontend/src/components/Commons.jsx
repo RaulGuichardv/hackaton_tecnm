@@ -1,7 +1,8 @@
 import { Badge } from "flowbite-react";
 import { NavLink, Outlet, Link, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import { Building2, LayoutDashboard, UsersRound, IdCard, ChartColumn, Menu, X, LogOut, ShieldCheck, QrCode } from "lucide-react";
+import { LayoutDashboard, UsersRound, IdCard, ChartColumn, Menu, X, LogOut, ShieldCheck, QrCode } from "lucide-react";
+import logo from "../assets/logo.jpeg";
 
 export function Estado({ estado }) {
   const map = {
@@ -41,12 +42,12 @@ export function Layout() {
         <button onClick={() => setOpen(!open)} aria-label={open ? "Cerrar menú" : "Abrir menú"} aria-expanded={open} className="rounded-lg p-2 hover:bg-slate-100">
           {open ? <X size={24}/> : <Menu size={24}/>}
         </button>
-        <strong className="text-sky-900">Credencia</strong>
-        <span className="text-xs text-slate-500">Hackatón</span>
+        <strong className="text-sky-900">Credetec</strong>
+        <span className="text-xs text-slate-500">Sistema de credencialización</span>
       </header>
       {open && <button className="no-print fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={close} aria-label="Cerrar navegación"/>}
       <aside className={`no-print fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto bg-slate-900 px-4 py-7 text-white transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
-        <Link to="/admin" onClick={close} className="flex items-center gap-3 px-3 pb-8 text-xl font-bold"><Building2 className="text-sky-400"/> Credencia</Link>
+        <Link to="/admin" onClick={close} className="flex items-center gap-3 px-3 pb-8 text-xl font-bold"><img src={logo} alt="Logo" className="h-6 w-6 object-cover"/><span className="ml-1">Credetec</span></Link>
         <div className="mb-4 px-3 text-xs uppercase tracking-widest text-slate-400">Panel de administración</div>
         <nav className="grid gap-1">
           {menu.map(([to, label, Icon]) => (
