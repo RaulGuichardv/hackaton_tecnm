@@ -1,5 +1,9 @@
  LISTA DE ENDPOINTS DE LA API 
 
+ NOTA DE SEGURIDAD: todas las rutas administrativas requieren el encabezado
+ `Authorization: Bearer <access_token>` devuelto por /administrador/login.
+ Solo /administrador/login y /verificar son públicos.
+
 1. /trabajadores/registrar
    - Protocolo HTTP: POST
    - Descripción: Crea y registra un nuevo trabajador en el sistema junto con sus relaciones.
@@ -43,3 +47,31 @@
 11. /trabajadores/credenciales/{id_trabajador}
    - Protocolo HTTP: GET
    - Descripción: Obtiene las credenciales de un trabajador
+
+12. /uploads/fotografias
+   - Protocolo HTTP: POST
+   - Descripción: Recibe una fotografía (multipart/form-data), la guarda en backend/uploads/fotos y devuelve su URL.
+
+13. /verificar?token={token}
+   - Protocolo HTTP: GET
+   - Descripción: Verificación pública por el token único del QR o por número de tarjeta. No expone CURP ni datos de emergencia.
+
+14. /trabajadores/{id_trabajador}/estado
+   - Protocolo HTTP: PATCH
+   - Descripción: Activa o desactiva la credencial de un trabajador. Body: {"estado": true|false}.
+
+15. /administrador/login
+   - Protocolo HTTP: POST
+   - Descripción: Autentica a un administrador y devuelve un token firmado con expiración.
+
+16. /administrador/registrar
+   - Protocolo HTTP: POST
+   - Descripción: Crea un administrador con contraseña cifrada con bcrypt. Requiere token.
+
+17. /administrador/perfil
+   - Protocolo HTTP: GET
+   - Descripción: Devuelve los datos del administrador autenticado a partir del token.
+
+18. Notificaciones automáticas
+   - Se disparan al crear una credencial, activarla/desactivarla y modificar la vigencia.
+   - Se envían por SMTP si SMTP_HOST está configurado; si no, se guardan en backend/outbox/*.eml.
