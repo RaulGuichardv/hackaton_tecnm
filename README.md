@@ -4,22 +4,24 @@ Sistema para administrar trabajadores, generar credenciales digitales y verifica
 
 ## 1. Base de datos
 
+Se crea el esquema, el administrador y 10 trabajadores de ejemplo:
+
 ```bash
 cd /home/raulgv/hackaton_tecnm
 mysql -u root -p credetec < base_de_datos/db.sql
 ```
 
-Crea el esquema, el administrador y 10 trabajadores de ejemplo.
-
 ## 2. Variables de entorno
+
+Se copian las variables de ejemplo y se editan según sea necesario:
 
 ```bash
 cp .env.example .env
 ```
 
-Edita `.env` si necesitas cambiar la contraseña de la base de datos o configurar SMTP para los correos.
-
 ## 3. Backend (FastAPI)
+
+El backend se ejecuta con uvicorn:
 
 ```bash
 source env/bin/activate
@@ -31,6 +33,8 @@ uvicorn main:app --reload
 - Documentación: `http://127.0.0.1:8000/docs`
 
 ## 4. Frontend (React + Vite)
+
+El frontend se compila y ejecuta en modo desarrollo:
 
 ```bash
 cd frontend
@@ -45,20 +49,3 @@ npm run dev
 
 - Correo: `admin@credetec.com`
 - Contraseña: `Admin1234!`
-
-## Rutas principales
-
-- `/login` — Inicio de sesión
-- `/admin` — Panel general
-- `/admin/trabajadores` — Lista de trabajadores
-- `/admin/trabajadores/nuevo` — Registrar trabajador (con foto)
-- `/admin/credenciales` — Ver credenciales y activar/desactivar
-- `/admin/escanear` — Escáner de cámara para QR
-- `/admin/reportes` — Reportes de credencialización
-- `/verify/{token}` — Verificación pública de credencial
-
-## Notas
-
-- Las fotografías se suben desde el explorador de archivos y se guardan en `backend/uploads/fotos/`.
-- Si no configuras SMTP, los correos de notificación se guardan como `.eml` en `backend/outbox/`.
-- Para producción, cambia la contraseña del admin y configura `CREDETEC_SECRET_KEY` en `.env`.
