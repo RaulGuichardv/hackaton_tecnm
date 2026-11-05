@@ -6,26 +6,23 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      # Base de datos MariaDB Cloud
+      # Base de datos MariaDB Cloud (configurar manualmente en Render)
       - key: DB_HOST
         sync: false
       - key: DB_PORT
         value: "3306"
-        sync: false
       - key: DB_USER
         sync: false
       - key: DB_PASSWORD
         sync: false
       - key: DB_NAME
         value: credetec
-        sync: false
 
       # Autenticación administrativa
       - key: CREDETEC_SECRET_KEY
         sync: false
       - key: CREDETEC_TOKEN_TTL
         value: "43200"
-        sync: false
 
       # URL del frontend para enlaces de verificación QR
       - key: PUBLIC_BASE_URL
@@ -34,10 +31,8 @@ services:
       # Notificaciones SMTP (Gmail)
       - key: SMTP_HOST
         value: smtp.gmail.com
-        sync: false
       - key: SMTP_PORT
         value: "587"
-        sync: false
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASSWORD
@@ -46,10 +41,7 @@ services:
         sync: false
       - key: SMTP_SSL
         value: "false"
-        sync: false
       - key: SMTP_STARTTLS
         value: "true"
-        sync: false
       - key: SMTP_TIMEOUT
         value: "10"
-        sync: false
