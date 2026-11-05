@@ -425,6 +425,28 @@ def actualizar_vigencia(
         )
     return resultado
 
+@app.get(
+    "/trabajadores/test-lista",
+    tags=["Pruebas"],
+    summary="Endpoint público para verificar respuesta del backend",
+)
+def test_lista_trabajadores():
+    """Devuelve información diagnóstica sobre la respuesta de trabajadores sin requerir autenticación."""
+    try:
+        datos = controllers.obtener_todos_los_trabajadores(page=1, page_size=5)
+        return {
+            "ok": True,
+            "tipo_respuesta": type(datos).__name__,
+            "tiene_resultados": isinstance(datos, dict) and "resultados" in datos,
+            "resultado_es_lista": isinstance(datos.get("resultados"), list) if isinstance(datos, dict) else isinstance(datos, list),
+            "total": datos.get("total") if isinstance(datos, dict) else None,
+            "ejemplo_primer_registro": datos["resultados"][0] if isinstance(datos, dict) and datos.get("resultados") else None,
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+
 @app.delete(
     "/trabajadores/eliminar/{id_trabajador}",
     tags=["Trabajadores"],
