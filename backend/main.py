@@ -16,6 +16,7 @@ from enum import Enum
 from pathlib import Path
 from uuid import uuid4
 import re
+import traceback
 
 import controllers
 import notificaciones
@@ -136,8 +137,8 @@ class RegistrarTrabajadorSchema(BaseModel):
     edad: int
     sexo: SexoEnum
     curp: str
-    numero_trabajador: str
-    numero_de_tarjeta: str
+    numero_trabajador: Optional[str] = None
+    numero_de_tarjeta: Optional[str] = None
     area_adscripcion: str
     cargo: str
     correo: str
@@ -234,6 +235,7 @@ def registrar_trabajador(trabajador: RegistrarTrabajadorSchema, background_tasks
     except ValueError as ve:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(ve))
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get(
@@ -299,6 +301,33 @@ def obtener_datos_emergencia(id_trabajador: int):
     if not datos:
         raise HTTPException(status_code=404, detail="Datos de emergencia no encontrados")
     return datos
+
+@app.patch(
+    "/trabajadores/{id_trabajador}/datos-emergencia",
+    tags=["Relaciones"],
+    dependencies=[Depends(requiere_admin)],
+)
+def actualizar_datos_emergencia(
+    id_trabajador: int,
+    datos: DatosEmergenciaSchema,
+    background_tasks: BackgroundTasks,
+):
+    if not controllers.obtener_trabajador_por_id(id_trabajador):
+        raise HTTPException(status_code=404, detail="Trabajador no encontrado")
+    try:
+        resultado = controllers.actualizar_datos_emergencia_trabajador(
+            id_trabajador, datos.model_dump()
+        )
+        if not resultado:
+            raise HTTPException(status_code=404, detail="Datos de emergencia no encontrados")
+        datos_notificacion = controllers.obtener_datos_notificacion(id_trabajador)
+        if datos_notificacion:
+            background_tasks.add_task(
+                notificaciones.enviar_notificacion, "modificacion", datos_notificacion
+            )
+        return resultado
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(ve))
 
 @app.get(
     "/trabajadores/{id_trabajador}/vigencias",
@@ -394,6 +423,30 @@ def eliminar_trabajador(id_trabajador: int):
     if not resultado:
         raise HTTPException(status_code=404, detail="Trabajador no encontrado")
     return resultado
+
+
+@app.post("/test/notificacion", tags=["Pruebas"])
+def test_notificacion(correo: str):
+    """Envía un correo de prueba para validar que el SMTP funciona."""
+    try:
+        notificaciones.enviar_notificacion("creacion", {
+            "nombre_completo": "Prueba SMTP",
+            "numero_trabajador": "TRAB-9999",
+            "numero_de_tarjeta": "1234567890123456",
+            "area_adscripcion": "Sistemas",
+            "cargo": "Desarrollador",
+            "correo": correo,
+            "fecha_inicio": "2026-01-01",
+            "fecha_vencimiento": "2026-12-31",
+            "estado": True,
+            "credencial_activa_dentro_del_periodo": True,
+            "credencial_desactivada_por_el_administrador": False,
+            "qr": "prueba-smtp-123",
+        })
+        return {"mensaje": f"Correo de prueba enviado a {correo}"}
+    except Exception as e:
+        return {"error": str(e)}
+
 
 @app.post("/administrador/login", status_code=status.HTTP_200_OK, tags=["Administrador"])
 def login_admin(credenciales: AdminLoginSchema):

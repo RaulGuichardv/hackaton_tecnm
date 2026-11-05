@@ -93,7 +93,7 @@ const fechaHora = (fecha, fin = false) => {
 };
 
 function validarFormulario(w) {
-  for (const k of ["nombre_completo", "sexo", "curp", "numero_trabajador", "numero_tarjeta", "area_adscripcion", "cargo", "correo", "foto", "fecha_inicio", "fecha_vencimiento"]) {
+  for (const k of ["nombre_completo", "sexo", "curp", "area_adscripcion", "cargo", "correo", "foto", "fecha_inicio", "fecha_vencimiento"]) {
     rejectMissing(w[k], k);
   }
   const curp = field(w.curp).trim().toUpperCase();
@@ -103,10 +103,6 @@ function validarFormulario(w) {
   const correo = field(w.correo).trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(correo)) {
     throw new Error("El correo electrónico no es válido");
-  }
-  const num = field(w.numero_tarjeta).trim();
-  if (!/^\d{4,30}$/.test(num)) {
-    throw new Error("Número de tarjeta: escribe entre 4 y 30 dígitos (puede iniciar con ceros)");
   }
   if (!Number.isInteger(Number(w.edad)) || Number(w.edad) < 1 || Number(w.edad) > 110) {
     throw new Error("Edad no válida");
@@ -123,7 +119,7 @@ function validarFormulario(w) {
   if (field(w.foto).length > 255) {
     throw new Error("La ruta de fotografía supera los 255 caracteres admitidos en MariaDB");
   }
-  return num;
+  return null;
 }
 
 /**
@@ -132,19 +128,26 @@ function validarFormulario(w) {
  * como único. La vista pública consulta el estado actual sin regenerar el QR.
  */
 export async function guardarTrabajador(values, id) {
-  const numero_de_tarjeta = validarFormulario(values);
+  validarFormulario(values);
   const generales = {
     nombre_completo: values.nombre_completo.trim(),
     edad: Number(values.edad),
     sexo: values.sexo,
     curp: values.curp.trim().toUpperCase(),
-    numero_trabajador: values.numero_trabajador.trim(),
-    numero_de_tarjeta,
     area_adscripcion: values.area_adscripcion.trim(),
     cargo: values.cargo.trim(),
     correo: values.correo.trim().toLowerCase(),
     fotografia: values.foto.trim(),
   };
+
+  // El número de trabajador y el número de tarjeta se generan automáticamente
+  // en el backend si no se proporcionan.
+  if (values.numero_trabajador && values.numero_trabajador.trim()) {
+    generales.numero_trabajador = values.numero_trabajador.trim();
+  }
+  if (values.numero_tarjeta && values.numero_tarjeta.trim()) {
+    generales.numero_de_tarjeta = values.numero_tarjeta.trim();
+  }
 
   if (!id) {
     rejectMissing(values.emergencia_nombre, "contacto de emergencia");
@@ -183,7 +186,18 @@ export async function guardarTrabajador(values, id) {
   } catch (e) {
     throw new Error(`Se actualizaron datos generales, pero la vigencia falló: ${e.message}`);
   }
-  // No existe endpoint para editar contactos de emergencia.
+  // Actualizar contacto de emergencia (ya existe endpoint PATCH en el backend).
+  try {
+    await apiFetch(ENDPOINTS.emergencia(id), {
+      ...auth(), method: "PATCH", body: {
+        nombre: values.emergencia_nombre.trim(),
+        telefono: values.emergencia_telefono.trim(),
+      },
+    });
+  } catch (e) {
+    throw new Error(`Se actualizaron los datos, pero el contacto de emergencia falló: ${e.message}`);
+  }
+
   return { id: Number(id) };
 }
 

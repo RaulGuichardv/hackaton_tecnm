@@ -3,24 +3,67 @@ import pymysql
 
 from datetime import datetime
 import bcrypt
+import random
+import traceback
 
 def registrar_trabajador_completo(datos: dict) -> dict:
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            cursor.execute(
-                "SELECT id_trabajador FROM trabajadores WHERE numero_de_tarjeta = %s",
-                (datos["numero_de_tarjeta"],)
-            )
-            if cursor.fetchone():
-                raise ValueError("El número de tarjeta ya está registrado")
+            # Generar número de trabajador automáticamente si no se proporciona.
+            # Se prueban IDs consecutivos hasta hallar uno disponible, de modo que
+            # el registro no falle aunque haya varias altas al mismo tiempo.
+            numero_trabajador = datos.get("numero_trabajador")
+            if not numero_trabajador:
+                cursor.execute("SELECT COALESCE(MAX(id_trabajador), 0) + 1 AS siguiente_id FROM trabajadores")
+                fila = cursor.fetchone()
+                siguiente_id = int(fila["siguiente_id"])
+                numero_trabajador = None
+                for desplazamiento in range(20):
+                    candidato = f"TRAB-{siguiente_id + desplazamiento:04d}"
+                    cursor.execute(
+                        "SELECT id_trabajador FROM trabajadores WHERE numero_trabajador = %s",
+                        (candidato,)
+                    )
+                    if not cursor.fetchone():
+                        numero_trabajador = candidato
+                        datos["numero_trabajador"] = numero_trabajador
+                        break
+                if not numero_trabajador:
+                    raise ValueError("No se pudo generar un número de trabajador disponible")
 
+            # Generar número de tarjeta automáticamente si no se proporciona.
+            # Bucle con límite de intentos para evitar bucle infinito ante colisiones.
+            numero_tarjeta = datos.get("numero_de_tarjeta")
+            if not numero_tarjeta:
+                for _ in range(50):
+                    candidato = f"{random.randint(1000000000000000, 9999999999999999)}"
+                    cursor.execute(
+                        "SELECT id_trabajador FROM trabajadores WHERE numero_de_tarjeta = %s",
+                        (candidato,)
+                    )
+                    if not cursor.fetchone():
+                        numero_tarjeta = candidato
+                        datos["numero_de_tarjeta"] = numero_tarjeta
+                        break
+                if not numero_tarjeta:
+                    raise ValueError("No se pudo generar un número de tarjeta disponible")
+
+            # Verificar unicidad de número de trabajador
             cursor.execute(
                 "SELECT id_trabajador FROM trabajadores WHERE numero_trabajador = %s",
                 (datos["numero_trabajador"],)
             )
             if cursor.fetchone():
                 raise ValueError("El número de trabajador ya está registrado")
+
+            # Verificar unicidad de número de tarjeta
+            cursor.execute(
+                "SELECT id_trabajador FROM trabajadores WHERE numero_de_tarjeta = %s",
+                (datos["numero_de_tarjeta"],)
+            )
+            if cursor.fetchone():
+                raise ValueError("El número de tarjeta ya está registrado")
 
             cursor.execute(
                 "SELECT id_qr FROM qrs WHERE qr = %s",
@@ -247,6 +290,49 @@ def obtener_datos_emergencia_trabajador(id_trabajador: int) -> dict:
             """
             cursor.execute(sql, (id_trabajador,))
             return cursor.fetchone()
+    finally:
+        conexion.close()
+
+
+def actualizar_datos_emergencia_trabajador(id_trabajador: int, datos: dict) -> dict | None:
+    """Actualiza el nombre y teléfono de contacto de emergencia de un trabajador."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "SELECT id_datos_emergencia FROM trabajadores WHERE id_trabajador = %s",
+                (id_trabajador,)
+            )
+            resultado = cursor.fetchone()
+            if not resultado:
+                return None
+
+            id_datos_emergencia = resultado["id_datos_emergencia"]
+
+            nombre = datos.get("nombre")
+            telefono = datos.get("telefono")
+            if not nombre or not telefono:
+                raise ValueError("El nombre y el teléfono de contacto de emergencia son obligatorios")
+
+            cursor.execute(
+                """
+                UPDATE datos_de_emergencia
+                SET nombre = %s, telefono = %s
+                WHERE id_datos_emergencia = %s
+                """,
+                (nombre.strip(), telefono.strip(), id_datos_emergencia),
+            )
+
+        conexion.commit()
+        return {
+            "mensaje": "Datos de emergencia actualizados correctamente",
+            "id_datos_emergencia": id_datos_emergencia,
+            "nombre": nombre.strip(),
+            "telefono": telefono.strip(),
+        }
+    except Exception as e:
+        conexion.rollback()
+        raise e
     finally:
         conexion.close()
 
