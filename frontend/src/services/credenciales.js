@@ -5,6 +5,18 @@ import { ENDPOINTS } from "./endpoints";
 const auth = () => ({ token: sessionStorage.getItem("token") });
 const field = (value) => (value == null ? "" : String(value));
 const dateField = (value) => field(value).slice(0, 10);
+// MariaDB devuelve el estado como 0/1; la API también puede enviarlo como
+// booleano o texto. Normalizamos siempre a booleano para no perder el estado.
+const toBool = (value) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const texto = value.trim().toLowerCase();
+    if (["1", "true", "si", "sí", "yes"].includes(texto)) return true;
+    if (["0", "false", "no"].includes(texto)) return false;
+  }
+  return null;
+};
 const rejectMissing = (value, name) => {
   if (!field(value).trim()) throw new Error(`Completa el campo: ${name}`);
 };
@@ -35,7 +47,7 @@ function normalizar(row, extra = {}) {
     emergencia_telefono: extra.emergencia?.telefono ?? "",
     fecha_inicio: dateField(extra.vigencia?.fecha_inicio),
     fecha_vencimiento: dateField(extra.vigencia?.fecha_vencimiento),
-    activa: typeof extra.estado?.estado === "boolean" ? extra.estado.estado : null,
+    activa: toBool(extra.estado?.estado ?? row.estado ?? row.estado_activo ?? row.activa),
     token_verificacion: extra.qr?.qr ?? undefined,
     relaciones_incompletas: extra.errores?.length > 0,
   };
@@ -76,7 +88,7 @@ export async function listarTrabajadores(page = 1, pageSize = 50) {
   };
   for (const row of data.resultados) {
     const extra = {
-      estado: { estado: row.estado_activo ?? null },
+      estado: { estado: row.estado ?? row.estado_activo ?? null },
       vigencia: {
         fecha_inicio: row.fecha_inicio,
         fecha_vencimiento: row.fecha_vencimiento,

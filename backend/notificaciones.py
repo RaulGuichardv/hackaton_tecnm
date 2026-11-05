@@ -4,9 +4,11 @@ Si SMTP_HOST no está configurado, el correo se escribe como archivo .eml en
 backend/outbox para que el flujo sea verificable en desarrollo sin credenciales.
 El envío nunca interrumpe la operación principal: los errores se registran.
 """
+import json
 import logging
 import os
 import smtplib
+import urllib.request
 from datetime import datetime
 from email.message import EmailMessage
 from html import escape
@@ -24,12 +26,21 @@ OUTBOX_DIR = BASE_DIR / "outbox"
 SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "").strip()
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+# Las contraseñas de aplicación de Gmail se muestran con espacios; el servidor
+# espera los 16 caracteres sin separadores.
+SMTP_PASSWORD = "".join(os.getenv("SMTP_PASSWORD", "").split())
 SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "no-reply@credetec.com").strip()
 SMTP_SSL = os.getenv("SMTP_SSL", "false").lower() in {"1", "true", "yes", "si", "sí"}
 SMTP_STARTTLS = os.getenv("SMTP_STARTTLS", "true").lower() in {"1", "true", "yes", "si", "sí"}
 SMTP_TIMEOUT = int(os.getenv("SMTP_TIMEOUT", "10"))
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:5173").rstrip("/")
+
+# Proveedores de correo por HTTPS (puerto 443). Render Free bloquea los puertos
+# SMTP 25, 465 y 587, por lo que en producción se debe usar una API HTTP.
+EMAIL_API_FROM = os.getenv("EMAIL_API_FROM", SMTP_FROM).strip()
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "").strip()
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "").strip()
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 
 TIPOS = {
     "creacion": (
@@ -68,7 +79,7 @@ def _bool(valor) -> bool:
 
 
 def calcular_estado_actual(datos: dict) -> str:
-    """Calcula el estado visible de la credencial con las reglas del Reto 3."""
+    """Calcula el estado visible de la credencial con las reglas del sistema."""
     if not _bool(datos.get("estado")):
         return "Inactiva"
     if _bool(datos.get("credencial_desactivada_por_el_administrador")):
@@ -164,6 +175,85 @@ def _construir_mensaje(tipo: str, datos: dict) -> EmailMessage:
     return mensaje
 
 
+def _cuerpos_html_texto(mensaje: EmailMessage) -> tuple[str, str]:
+    """Extrae las versiones texto y HTML del mensaje para las APIs HTTP."""
+    parte_texto = mensaje.get_body(preferencelist=("plain",))
+    parte_html = mensaje.get_body(preferencelist=("html",))
+    texto = parte_texto.get_content() if parte_texto else ""
+    html = parte_html.get_content() if parte_html else ""
+    return texto, html
+
+
+def _post_json(url: str, payload: dict, headers: dict) -> None:
+    datos = json.dumps(payload).encode("utf-8")
+    solicitud = urllib.request.Request(
+        url,
+        data=datos,
+        method="POST",
+        headers={"Content-Type": "application/json", **headers},
+    )
+    with urllib.request.urlopen(solicitud, timeout=SMTP_TIMEOUT) as respuesta:
+        if respuesta.status >= 300:
+            raise RuntimeError(f"El proveedor respondió HTTP {respuesta.status}")
+
+
+def _enviar_brevo(mensaje: EmailMessage, destinatario: str) -> None:
+    texto, html = _cuerpos_html_texto(mensaje)
+    _post_json(
+        "https://api.brevo.com/v3/smtp/email",
+        {
+            "sender": {"name": "Credetec", "email": EMAIL_API_FROM},
+            "to": [{"email": destinatario}],
+            "subject": mensaje["Subject"],
+            "htmlContent": html,
+            "textContent": texto,
+        },
+        {"api-key": BREVO_API_KEY, "accept": "application/json"},
+    )
+
+
+def _enviar_sendgrid(mensaje: EmailMessage, destinatario: str) -> None:
+    texto, html = _cuerpos_html_texto(mensaje)
+    _post_json(
+        "https://api.sendgrid.com/v3/mail/send",
+        {
+            "personalizations": [{"to": [{"email": destinatario}]}],
+            "from": {"email": EMAIL_API_FROM},
+            "subject": mensaje["Subject"],
+            "content": [
+                {"type": "text/plain", "value": texto},
+                {"type": "text/html", "value": html},
+            ],
+        },
+        {"Authorization": f"Bearer {SENDGRID_API_KEY}"},
+    )
+
+
+def _enviar_resend(mensaje: EmailMessage, destinatario: str) -> None:
+    texto, html = _cuerpos_html_texto(mensaje)
+    _post_json(
+        "https://api.resend.com/emails",
+        {
+            "from": EMAIL_API_FROM,
+            "to": [destinatario],
+            "subject": mensaje["Subject"],
+            "html": html,
+            "text": texto,
+        },
+        {"Authorization": f"Bearer {RESEND_API_KEY}"},
+    )
+
+
+def _proveedor_http():
+    if BREVO_API_KEY:
+        return "brevo", _enviar_brevo
+    if SENDGRID_API_KEY:
+        return "sendgrid", _enviar_sendgrid
+    if RESEND_API_KEY:
+        return "resend", _enviar_resend
+    return None, None
+
+
 def _enviar_smtp(mensaje: EmailMessage) -> None:
     if SMTP_SSL:
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=SMTP_TIMEOUT) as smtp:
@@ -190,20 +280,58 @@ def _guardar_en_outbox(mensaje: EmailMessage, tipo: str, datos: dict) -> Path:
     return destino
 
 
-def enviar_notificacion(tipo: str, datos: dict) -> None:
-    """Envía (o guarda en outbox) la notificación. Nunca lanza excepciones."""
+def diagnostico() -> dict:
+    """Estado de configuración del correo sin exponer credenciales."""
+    proveedor, _ = _proveedor_http()
+    return {
+        "proveedor_http": proveedor,
+        "smtp_configurado": bool(SMTP_HOST),
+        "smtp_host": SMTP_HOST or None,
+        "smtp_port": SMTP_PORT if SMTP_HOST else None,
+        "smtp_usuario": SMTP_USER or None,
+        "remitente": EMAIL_API_FROM or None,
+    }
+
+
+def enviar_notificacion(tipo: str, datos: dict) -> dict:
+    """Envía (o guarda en outbox) la notificación. Nunca lanza excepciones.
+
+    Devuelve un diccionario con el resultado para que los diagnósticos puedan
+    informar si el correo salió realmente.
+    """
     destinatario = (datos.get("correo") or "").strip()
     if not destinatario:
         logger.warning("No se envió la notificación %s: el trabajador no tiene correo", tipo)
-        return
+        return {"ok": False, "error": "El trabajador no tiene correo registrado."}
 
     try:
         mensaje = _construir_mensaje(tipo, datos)
+        proveedor, enviar_http = _proveedor_http()
+        if proveedor:
+            enviar_http(mensaje, destinatario)
+            logger.info("Notificación %s enviada a %s vía %s", tipo, destinatario, proveedor)
+            return {"ok": True, "proveedor": proveedor, "destinatario": destinatario}
+
         if not SMTP_HOST:
             destino = _guardar_en_outbox(mensaje, tipo, datos)
             logger.info("SMTP no configurado; correo guardado en %s", destino)
-            return
+            return {
+                "ok": True,
+                "proveedor": "outbox",
+                "destinatario": destinatario,
+                "archivo": str(destino),
+            }
+
         _enviar_smtp(mensaje)
-        logger.info("Notificación %s enviada a %s", tipo, destinatario)
+        logger.info("Notificación %s enviada a %s vía SMTP", tipo, destinatario)
+        return {"ok": True, "proveedor": "smtp", "destinatario": destinatario}
     except Exception as error:  # El correo nunca debe tumbar la operación principal.
-        logger.error("No se pudo enviar la notificación %s a %s: %s", tipo, destinatario, error)
+        logger.error(
+            "No se pudo enviar la notificación %s a %s: %s", tipo, destinatario, error,
+            exc_info=True,
+        )
+        return {
+            "ok": False,
+            "destinatario": destinatario,
+            "error": f"{type(error).__name__}: {error}",
+        }

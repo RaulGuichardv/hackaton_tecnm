@@ -216,6 +216,7 @@ class TrabajadorResponseSchema(BaseModel):
     id_estado: int
     id_qr: int
     estado: Optional[bool] = None
+    estado_activo: Optional[bool] = None
     fecha_inicio: Optional[datetime] = None
     fecha_vencimiento: Optional[datetime] = None
     qr: Optional[str] = None
@@ -428,7 +429,8 @@ def actualizar_vigencia(
 @app.get(
     "/trabajadores/test-lista",
     tags=["Pruebas"],
-    summary="Endpoint público para verificar respuesta del backend",
+    summary="Endpoint de diagnóstico de la lista de trabajadores",
+    dependencies=[Depends(requiere_admin)],
 )
 def test_lista_trabajadores():
     """Devuelve información diagnóstica sobre la respuesta de trabajadores sin requerir autenticación."""
@@ -459,27 +461,38 @@ def eliminar_trabajador(id_trabajador: int):
     return resultado
 
 
-@app.post("/test/notificacion", tags=["Pruebas"])
+@app.get(
+    "/test/correo-config",
+    tags=["Pruebas"],
+    dependencies=[Depends(requiere_admin)],
+)
+def test_correo_config():
+    """Muestra qué proveedor de correo está configurado, sin exponer secretos."""
+    return notificaciones.diagnostico()
+
+
+@app.post(
+    "/test/notificacion",
+    tags=["Pruebas"],
+    dependencies=[Depends(requiere_admin)],
+)
 def test_notificacion(correo: str):
-    """Envía un correo de prueba para validar que el SMTP funciona."""
-    try:
-        notificaciones.enviar_notificacion("creacion", {
-            "nombre_completo": "Prueba SMTP",
-            "numero_trabajador": "TRAB-9999",
-            "numero_de_tarjeta": "1234567890123456",
-            "area_adscripcion": "Sistemas",
-            "cargo": "Desarrollador",
-            "correo": correo,
-            "fecha_inicio": "2026-01-01",
-            "fecha_vencimiento": "2026-12-31",
-            "estado": True,
-            "credencial_activa_dentro_del_periodo": True,
-            "credencial_desactivada_por_el_administrador": False,
-            "qr": "prueba-smtp-123",
-        })
-        return {"mensaje": f"Correo de prueba enviado a {correo}"}
-    except Exception as e:
-        return {"error": str(e)}
+    """Envía un correo de prueba y devuelve el resultado real del envío."""
+    resultado = notificaciones.enviar_notificacion("creacion", {
+        "nombre_completo": "Prueba SMTP",
+        "numero_trabajador": "TRAB-9999",
+        "numero_de_tarjeta": "1234567890123456",
+        "area_adscripcion": "Sistemas",
+        "cargo": "Desarrollador",
+        "correo": correo,
+        "fecha_inicio": "2026-01-01",
+        "fecha_vencimiento": "2026-12-31",
+        "estado": True,
+        "credencial_activa_dentro_del_periodo": True,
+        "credencial_desactivada_por_el_administrador": False,
+        "qr": "prueba-smtp-123",
+    })
+    return resultado
 
 
 @app.post("/administrador/login", status_code=status.HTTP_200_OK, tags=["Administrador"])

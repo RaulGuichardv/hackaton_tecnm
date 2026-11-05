@@ -11,7 +11,7 @@ services:
       - key: DB_HOST
         sync: false
       - key: DB_PORT
-        value: "3306"
+        value: "4003"
       - key: DB_USER
         sync: false
       - key: DB_PASSWORD
@@ -29,7 +29,19 @@ services:
       - key: PUBLIC_BASE_URL
         sync: false
 
-      # Notificaciones SMTP (Gmail)
+      # Notificaciones por HTTPS (obligatorio en Render Free).
+      # Render Free bloquea los puertos SMTP 25, 465 y 587 desde septiembre de 2025.
+      # Configura al menos una de estas claves y verifica el remitente en el proveedor.
+      - key: BREVO_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_API_FROM
+        sync: false
+
+      # Notificaciones SMTP (solo funciona en local o en planes pagados de Render)
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

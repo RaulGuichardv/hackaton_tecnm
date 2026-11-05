@@ -159,7 +159,8 @@ def obtener_todos_los_trabajadores(page: int = 1, page_size: int = 50) -> dict:
             sql = """
                 SELECT 
                     t.*,
-                    e.estado as estado_activo,
+                    e.estado AS estado,
+                    e.estado AS estado_activo,
                     v.fecha_inicio,
                     v.fecha_vencimiento,
                     q.qr
@@ -582,8 +583,8 @@ SQL_CREDENCIAL_PUBLICA = """
 def obtener_credencial_por_qr(token: str) -> dict | None:
     """Busca por token QR y, como respaldo, por número de tarjeta.
 
-    El Reto 3 permite que el QR apunte a /verify/{id_unico} o
-    /verify/{numero_tarjeta}; este respaldo cubre ambas variantes.
+    El QR puede apuntar a /verify/{id_unico} o /verify/{numero_tarjeta};
+    este respaldo cubre ambas variantes.
     """
     valor = token.strip()
     conexion = obtener_conexion()
