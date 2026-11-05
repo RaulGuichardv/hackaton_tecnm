@@ -66,17 +66,19 @@ async function cargarRelaciones(id, conEmergencia = false) {
 export async function listarTrabajadores() {
   const data = await apiFetch(ENDPOINTS.listar, auth());
   if (!Array.isArray(data)) throw new Error("FastAPI no devolvió una lista de trabajadores");
-  // Para la demo: 3 peticiones extra por trabajador para completar fechas, estado y QR.
-  // Para producción conviene que FastAPI entregue un DTO agregado y paginado.
+  // El backend ya entrega estado, vigencia y QR en una sola consulta con JOIN,
+  // por lo que no se necesitan peticiones extra por trabajador.
   const result = [];
-  for (let i = 0; i < data.length; i += 4) {
-    const batch = await Promise.all(
-      data.slice(i, i + 4).map(async (row) => {
-        const extra = await cargarRelaciones(row.id_trabajador);
-        return normalizar(row, extra);
-      })
-    );
-    result.push(...batch);
+  for (const row of data) {
+    const extra = {
+      estado: { estado: row.estado_activo ?? null },
+      vigencia: {
+        fecha_inicio: row.fecha_inicio,
+        fecha_vencimiento: row.fecha_vencimiento,
+      },
+      qr: { qr: row.qr },
+    };
+    result.push(normalizar(row, extra));
   }
   return result;
 }

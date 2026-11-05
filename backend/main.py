@@ -215,6 +215,10 @@ class TrabajadorResponseSchema(BaseModel):
     id_vigencia: int
     id_estado: int
     id_qr: int
+    estado: Optional[bool] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_vencimiento: Optional[datetime] = None
+    qr: Optional[str] = None
 
 @app.post(
     "/trabajadores/registrar",

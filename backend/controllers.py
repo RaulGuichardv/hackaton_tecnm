@@ -148,7 +148,18 @@ def obtener_todos_los_trabajadores() -> list:
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
-            sql = "SELECT * FROM trabajadores"
+            sql = """
+                SELECT 
+                    t.*,
+                    e.estado as estado_activo,
+                    v.fecha_inicio,
+                    v.fecha_vencimiento,
+                    q.qr
+                FROM trabajadores t
+                INNER JOIN estado e ON t.id_estado = e.id_estado
+                INNER JOIN vigencias v ON t.id_vigencia = v.id_vigencia
+                INNER JOIN qrs q ON t.id_qr = q.id_qr
+            """
             cursor.execute(sql)
             return cursor.fetchall()
     finally:
