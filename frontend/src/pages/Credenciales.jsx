@@ -8,7 +8,7 @@ import { calcularEstado } from "../utils/estado";
 
 export default function Credenciales() {
   const [workers,setWorkers]=useState([]), [query,setQuery]=useState(""), [state,setState]=useState("todos"), [error,setError]=useState(""), [updating,setUpdating]=useState(null);
-  useEffect(()=>{listarTrabajadores().then(setWorkers).catch(e=>setError(e.message))},[]);
+  useEffect(()=>{listarTrabajadores().then(v=>setWorkers(v.resultados)).catch(e=>setError(e.message))},[]);
   const rows=useMemo(()=>workers.filter(w=> (state==="todos"||calcularEstado(w)===state) && `${w.nombre_completo} ${w.numero_tarjeta}`.toLowerCase().includes(query.toLowerCase())),[workers,query,state]);
   async function toggle(w) {
     setUpdating(w.id); setError("");

@@ -8,7 +8,7 @@ import { calcularEstado } from "../utils/estado";
 
 export default function Dashboard() {
   const [items, setItems] = useState([]), [error, setError] = useState("");
-  useEffect(() => { listarTrabajadores().then(setItems).catch(e => setError(e.message)); }, []);
+  useEffect(() => { listarTrabajadores().then(v=>setItems(v.resultados)).catch(e => setError(e.message)); }, []);
   const all = items.map(w => ({...w, estado: calcularEstado(w)}));
   const cards = [
     ["Trabajadores", items.length, UsersRound, "bg-sky-50 text-sky-800"],

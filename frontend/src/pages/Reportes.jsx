@@ -8,7 +8,7 @@ import { datePretty } from "../components/CredentialCard";
 
 export default function Reportes() {
   const [items,setItems]=useState([]),[area,setArea]=useState("todas"),[state,setState]=useState("todos"),[error,setError]=useState("");
-  useEffect(()=>{listarTrabajadores().then(setItems).catch(e=>setError(e.message))},[]);
+  useEffect(()=>{listarTrabajadores().then(v=>setItems(v.resultados)).catch(e=>setError(e.message))},[]);
   const areas=[...new Set(items.map(w=>w.area_adscripcion))].sort();
   const rows=useMemo(()=>items.filter(w=>(area==="todas"||w.area_adscripcion===area)&&(state==="todos"||calcularEstado(w)===state)),[items,area,state]);
   return <>
