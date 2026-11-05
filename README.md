@@ -50,6 +50,10 @@ npm run dev
 - Correo: `admin@credetec.com`
 - Contraseña: `Admin1234!`
 
+## Fotografías
+
+Las imágenes se guardan en MariaDB (tabla `fotografias`) y se sirven en `/fotos/{id}`. Así sobreviven a los despliegues y reinicios de Render Free, cuyo disco es efímero. En producción, `VITE_API_URL` debe ser la URL absoluta del backend para que el navegador cargue las fotos desde Render y no desde Vercel.
+
 ## Notificaciones por correo
 
 El sistema envía un correo a la dirección registrada del trabajador cuando se crea, se actualiza o cambia el estado de su credencial. Si la dirección no existe, el proveedor rechazará o rebotará el mensaje; registra correos reales para probar el flujo.

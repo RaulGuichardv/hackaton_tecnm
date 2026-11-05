@@ -9,7 +9,25 @@ import { calcularEstado } from "../utils/estado";
 
 export default function DetalleCredencial() {
   const { id } = useParams(); const [worker,setWorker]=useState(null),[error,setError]=useState("");
-  useEffect(()=>{obtenerTrabajador(id).then(setWorker).catch(e=>setError(e.message))},[id]);
+  useEffect(() => {
+    let activo = true;
+    const cargar = () => obtenerTrabajador(id)
+      .then(w => { if (activo) { setWorker(w); setError(""); } })
+      .catch(e => { if (activo) setError(e.message); });
+    cargar();
+    // Refresca al volver a la pestaña y cada 10 s para reflejar cambios
+    // (por ejemplo una fotografía nueva) sin recargar la página.
+    const refrescar = () => { if (!document.hidden) cargar(); };
+    const timer = setInterval(refrescar, 10000);
+    window.addEventListener("focus", refrescar);
+    document.addEventListener("visibilitychange", refrescar);
+    return () => {
+      activo = false;
+      clearInterval(timer);
+      window.removeEventListener("focus", refrescar);
+      document.removeEventListener("visibilitychange", refrescar);
+    };
+  }, [id]);
   const link=worker?.token_verificacion ? `/verify/${encodeURIComponent(worker.token_verificacion)}` : null;
   return <>
     <PageHead title="Credencial digital" description="Vista de ambos lados e impresión horizontal. Medidas visuales sugeridas; confirmar especificaciones institucionales."><Link to="/admin/credenciales" className="text-sm text-sky-700"><ArrowLeft className="mr-1 inline" size={16}/>Volver</Link></PageHead>

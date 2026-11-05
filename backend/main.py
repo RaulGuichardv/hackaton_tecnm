@@ -4,6 +4,7 @@ from fastapi import (
     FastAPI,
     File,
     HTTPException,
+    Response,
     UploadFile,
     status,
 )
@@ -40,6 +41,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def preparar_tabla_fotografias():
+    """Garantiza el almacenamiento persistente de fotografías en MariaDB."""
+    try:
+        controllers.asegurar_tabla_fotografias()
+    except Exception as error:
+        print(f"No se pudo preparar la tabla de fotografías: {error}")
+
 
 class SexoEnum(str, Enum):
     hombre = "hombre"
@@ -576,10 +587,32 @@ async def subir_fotografia(archivo: UploadFile = File(...)):
     if len(contenido) > TAMANIO_MAXIMO_FOTO:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="La fotografía supera los 8 MB")
 
-    nombre_archivo = f"{uuid4().hex}{extension}"
-    (FOTOS_DIR / nombre_archivo).write_bytes(contenido)
+    # La imagen se guarda en MariaDB (no en el disco de Render) para que
+    # sobreviva a despliegues y reinicios del servicio.
+    id_fotografia = uuid4().hex
+    try:
+        controllers.guardar_fotografia(id_fotografia, archivo.content_type, contenido)
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"No se pudo guardar la fotografía: {e}",
+        )
 
-    return {"url": f"/uploads/fotos/{nombre_archivo}"}
+    return {"url": f"/fotos/{id_fotografia}"}
+
+
+@app.get("/fotos/{id_fotografia}", tags=["Archivos"])
+def mostrar_fotografia(id_fotografia: str):
+    """Entrega una fotografía almacenada en MariaDB."""
+    fila = controllers.obtener_fotografia(id_fotografia)
+    if not fila:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fotografía no encontrada")
+    return Response(
+        content=fila["contenido"],
+        media_type=fila["tipo"],
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @app.get("/verificar", response_model=VerificacionCredencialSchema, tags=["Verificación pública"])

@@ -24,8 +24,8 @@ const rejectMissing = (value, name) => {
 function fotoUrl(value) {
   const url = field(value).trim();
   if (!url) return "";
-  // Las rutas HTTP absolutas, relativas a la web y data URLs existentes se muestran
-  // solo como vista previa. La API actual no expone archivos de imagen.
+  // Se conserva la ruta tal como la guarda el backend (/fotos/... o
+  // /uploads/...). El componente Avatar la resuelve contra el origen de la API.
   return url;
 }
 

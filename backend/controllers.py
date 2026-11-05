@@ -607,6 +607,60 @@ def obtener_credencial_por_qr(token: str) -> dict | None:
         conexion.close()
 
 
+def asegurar_tabla_fotografias() -> None:
+    """Crea la tabla de fotografías si no existe.
+
+    Render Free usa un disco efímero: los archivos subidos se pierden en cada
+    despliegue o reinicio. Guardar la imagen en MariaDB mantiene las fotos
+    disponibles entre despliegues y permite mostrarlas desde cualquier cliente.
+    """
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS fotografias (
+                    id_fotografia VARCHAR(36) NOT NULL PRIMARY KEY,
+                    tipo VARCHAR(100) NOT NULL,
+                    contenido LONGBLOB NOT NULL,
+                    creado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """
+            )
+        conexion.commit()
+    finally:
+        conexion.close()
+
+
+def guardar_fotografia(id_fotografia: str, tipo: str, contenido: bytes) -> None:
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO fotografias (id_fotografia, tipo, contenido) VALUES (%s, %s, %s)",
+                (id_fotografia, tipo, contenido),
+            )
+        conexion.commit()
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
+
+def obtener_fotografia(id_fotografia: str) -> dict | None:
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "SELECT tipo, contenido FROM fotografias WHERE id_fotografia = %s",
+                (id_fotografia,),
+            )
+            return cursor.fetchone()
+    finally:
+        conexion.close()
+
+
 def obtener_datos_notificacion(id_trabajador: int) -> dict | None:
     """Datos completos para construir las notificaciones por correo."""
     conexion = obtener_conexion()

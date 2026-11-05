@@ -3,6 +3,7 @@ import { NavLink, Outlet, Link, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, UsersRound, IdCard, ChartColumn, Menu, X, LogOut, ShieldCheck, QrCode } from "lucide-react";
 import logoPrincipal from "../assets/logo_principal.png";
+import { resolverUrl } from "../services/api";
 
 export function Estado({ estado }) {
   const map = {
@@ -73,9 +74,10 @@ export function ErrorMessage({ error }) { return error ? <div role="alert" class
 export function Avatar({worker, size="md"}) {
   const dimension = size === "lg" ? "h-24 w-24 text-2xl" : "h-10 w-10 text-xs";
   const [errorFoto, setErrorFoto] = useState(false);
-  useEffect(() => setErrorFoto(false), [worker?.foto]);
-  return worker?.foto && !errorFoto
-    ? <img src={worker.foto} alt={`Fotografía de ${worker.nombre_completo}`} onError={() => setErrorFoto(true)} className={`${dimension} rounded-xl object-cover`}/>
+  const foto = resolverUrl(worker?.foto);
+  useEffect(() => setErrorFoto(false), [foto]);
+  return foto && !errorFoto
+    ? <img src={foto} alt={`Fotografía de ${worker.nombre_completo}`} onError={() => setErrorFoto(true)} className={`${dimension} rounded-xl object-cover`}/>
     : <div aria-label="Sin fotografía" className={`${dimension} grid shrink-0 place-content-center rounded-xl bg-sky-100 font-bold text-sky-800`}>{worker?.nombre_completo?.split(" ").slice(0,2).map(x=>x[0]).join("") || "?"}</div>;
 }
 export function PrivadoAviso(){return <p className="mt-4 flex items-start gap-2 text-xs text-slate-500"><ShieldCheck size={16} className="shrink-0"/> La vista pública no expone CURP ni contactos de emergencia.</p>}
