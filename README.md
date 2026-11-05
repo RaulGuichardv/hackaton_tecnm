@@ -49,3 +49,21 @@ npm run dev
 
 - Correo: `admin@credetec.com`
 - Contraseña: `Admin1234!`
+
+## Notificaciones por correo
+
+El sistema envía un correo a la dirección registrada del trabajador cuando se crea, se actualiza o cambia el estado de su credencial. Si la dirección no existe, el proveedor rechazará o rebotará el mensaje; registra correos reales para probar el flujo.
+
+- En local o en un plan pagado de Render se puede usar SMTP (Gmail) configurando `SMTP_*`.
+- **Render Free bloquea los puertos SMTP 25, 465 y 587.** En producción configura un proveedor por HTTPS (puerto 443) y verifica el remitente en el proveedor:
+  - `BREVO_API_KEY` + `EMAIL_API_FROM`
+  - `SENDGRID_API_KEY` + `EMAIL_API_FROM`
+  - `RESEND_API_KEY` + `EMAIL_API_FROM`
+
+El backend elige automáticamente el primer proveedor HTTP configurado; si no hay ninguno, usa SMTP o guarda el correo en `backend/outbox`.
+
+Diagnóstico con token de administrador:
+
+- `GET /test/correo-config`: indica el proveedor activo sin exponer secretos.
+- `POST /test/notificacion?correo=...`: envía un correo de prueba y devuelve el resultado real.
+
