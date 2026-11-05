@@ -13,6 +13,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from html import escape
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from dotenv import load_dotenv
 
@@ -33,7 +34,23 @@ SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "no-reply@credetec.com").strip()
 SMTP_SSL = os.getenv("SMTP_SSL", "false").lower() in {"1", "true", "yes", "si", "sí"}
 SMTP_STARTTLS = os.getenv("SMTP_STARTTLS", "true").lower() in {"1", "true", "yes", "si", "sí"}
 SMTP_TIMEOUT = int(os.getenv("SMTP_TIMEOUT", "10"))
-PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:5173").rstrip("/")
+
+
+def _url_base(valor: str) -> str:
+    """Devuelve la raíz del frontend para armar enlaces de verificación.
+
+    PUBLIC_BASE_URL debe apuntar a la raíz del sitio. Si se configuró con una
+    ruta interna (por ejemplo /login), los enlaces quedarían rotos, así que
+    conservamos solo el origen.
+    """
+    valor = (valor or "").strip().rstrip("/")
+    partes = urlsplit(valor)
+    if not partes.scheme or not partes.netloc:
+        return valor
+    return urlunsplit((partes.scheme, partes.netloc, "", "", ""))
+
+
+PUBLIC_BASE_URL = _url_base(os.getenv("PUBLIC_BASE_URL", "http://localhost:5173"))
 
 # Proveedores de correo por HTTPS (puerto 443). Render Free bloquea los puertos
 # SMTP 25, 465 y 587, por lo que en producción se debe usar una API HTTP.
